@@ -10,7 +10,6 @@ import (
 	"github.com/slok/kubewebhook/pkg/observability/metrics"
 	"github.com/slok/kubewebhook/pkg/webhook"
 	"github.com/slok/kubewebhook/pkg/webhook/validating"
-	"github.com/stefanprodan/kubectl-kubesec/pkg/kubesec"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -48,15 +47,15 @@ func (d *podValidator) Validate(_ context.Context, obj metav1.Object) (bool, val
 
 	d.logger.Infof("Scanning pod %s", kObj.Name)
 
-	result, err := kubesec.NewClient().ScanDefinition(buffer)
-	if err != nil {
-		d.logger.Errorf("kubesec.io scan failed %v", err)
-		return false, validating.ValidatorResult{Valid: true}, nil
-	}
-	if result.Error != "" {
-		d.logger.Errorf("kubesec.io scan failed %v", result.Error)
-		return false, validating.ValidatorResult{Valid: true}, nil
-	}
+	//result, err := kubesec.NewClient().ScanDefinition(buffer)
+	//if err != nil {
+	//	d.logger.Errorf("kubesec.io scan failed %v", err)
+	//	return false, validating.ValidatorResult{Valid: true}, nil
+	//}
+	//if result.Error != "" {
+	//	d.logger.Errorf("kubesec.io scan failed %v", result.Error)
+	//	return false, validating.ValidatorResult{Valid: true}, nil
+	//}
 
 	//if result.Score < d.minScore {
 	//	return true, validating.ValidatorResult{
@@ -78,7 +77,7 @@ func NewPodWebhook(grafeasUrl string, mrec metrics.Recorder, logger log.Logger) 
 	}
 
 	cfg := validating.WebhookConfig{
-		Name: "kubesec-pod",
+		Name: "grafeas-image-signing-pod",
 		Obj:  &v1.Pod{},
 	}
 

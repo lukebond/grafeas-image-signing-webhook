@@ -10,7 +10,6 @@ import (
 	"github.com/slok/kubewebhook/pkg/observability/metrics"
 	"github.com/slok/kubewebhook/pkg/webhook"
 	"github.com/slok/kubewebhook/pkg/webhook/validating"
-	"github.com/stefanprodan/kubectl-kubesec/pkg/kubesec"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -49,15 +48,15 @@ func (d *daemonSetsValidator) Validate(_ context.Context, obj metav1.Object) (bo
 
 	d.logger.Infof("Scanning daemonset %s", kObj.Name)
 
-	result, err := kubesec.NewClient().ScanDefinition(buffer)
-	if err != nil {
-		d.logger.Errorf("kubesec.io scan failed %v", err)
-		return false, validating.ValidatorResult{Valid: true}, nil
-	}
-	if result.Error != "" {
-		d.logger.Errorf("kubesec.io scan failed %v", result.Error)
-		return false, validating.ValidatorResult{Valid: true}, nil
-	}
+	//result, err := kubesec.NewClient().ScanDefinition(buffer)
+	//if err != nil {
+	//	d.logger.Errorf("kubesec.io scan failed %v", err)
+	//	return false, validating.ValidatorResult{Valid: true}, nil
+	//}
+	//if result.Error != "" {
+	//	d.logger.Errorf("kubesec.io scan failed %v", result.Error)
+	//	return false, validating.ValidatorResult{Valid: true}, nil
+	//}
 
 	//if result.Score < d.grafeasUrl {
 	//	return true, validating.ValidatorResult{
@@ -79,7 +78,7 @@ func NewDaemonSetWebhook(grafeasUrl string, mrec metrics.Recorder, logger log.Lo
 	}
 
 	cfg := validating.WebhookConfig{
-		Name: "kubesec-daemonset",
+		Name: "grafeas-image-signing-daemonset",
 		Obj:  &extensionsv1beta1.DaemonSet{},
 	}
 
