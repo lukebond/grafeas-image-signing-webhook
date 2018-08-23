@@ -11,10 +11,6 @@
   version = "0.1.1"
 
 [[constraint]]
-  name = "github.com/stefanprodan/kubectl-kubesec"
-  version = "0.3.0"
-
-[[constraint]]
   name = "k8s.io/api"
   version = "kubernetes-1.10.5"
 
