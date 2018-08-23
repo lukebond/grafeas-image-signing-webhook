@@ -16,8 +16,8 @@ Bundle:
 make certs
 ```
 
-Deploy the admission controller and webhooks in the kubesec namespace
-(requires Kubernetes 1.10 or newer):
+Deploy the admission controller and webhooks in the grafeas-image-signing
+namespace (requires Kubernetes 1.10 or newer):
 
 ```bash
 make deploy
@@ -28,6 +28,14 @@ Enable grafeas-image-signing validation by adding this label:
 ```bash
 kubectl label namespaces default grafeas-image-signing-validation=enabled
 ```
+
+### Development
+
+1. Install [skaffold](https://github.com/GoogleContainerTools/skaffold)
+2. Run `skaffold dev`
+
+It will continuously deploy to wherever your `kubectl` is pointing, watching
+the filesystem for changes.
 
 ### Usage
 
