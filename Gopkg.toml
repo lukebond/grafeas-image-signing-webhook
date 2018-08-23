@@ -1,3 +1,6 @@
+[[constraint]]
+  branch = "master"
+  name = "github.com/Grafeas/client-go"
 
 [[constraint]]
   branch = "master"

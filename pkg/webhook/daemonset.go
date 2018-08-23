@@ -18,7 +18,7 @@ import (
 
 // daemonSetsValidator validates the definition against the Kubesec.io score.
 type daemonSetsValidator struct {
-	minScore int
+	grafeasUrl string
 	logger   log.Logger
 }
 
@@ -58,22 +58,22 @@ func (d *daemonSetsValidator) Validate(_ context.Context, obj metav1.Object) (bo
 		return false, validating.ValidatorResult{Valid: true}, nil
 	}
 
-	if result.Score < d.minScore {
-		return true, validating.ValidatorResult{
-			Valid:   false,
-			Message: fmt.Sprintf("%s score is %d, daemonset minimum accepted score is %d", kObj.Name, result.Score, d.minScore),
-		}, nil
-	}
+	//if result.Score < d.grafeasUrl {
+	//	return true, validating.ValidatorResult{
+	//		Valid:   false,
+	//		Message: fmt.Sprintf("%s score is %d, daemonset minimum accepted score is %d", kObj.Name, result.Score, d.grafeasUrl),
+	//	}, nil
+	//}
 
 	return false, validating.ValidatorResult{Valid: true}, nil
 }
 
 // NewDaemonSetWebhook returns a new DaemonSet validating webhook.
-func NewDaemonSetWebhook(minScore int, mrec metrics.Recorder, logger log.Logger) (webhook.Webhook, error) {
+func NewDaemonSetWebhook(grafeasUrl string, mrec metrics.Recorder, logger log.Logger) (webhook.Webhook, error) {
 
 	// Create validators.
 	val := &daemonSetsValidator{
-		minScore: minScore,
+		grafeasUrl: grafeasUrl,
 		logger:   logger,
 	}
 

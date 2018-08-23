@@ -1,8 +1,8 @@
 FROM golang:1.10 as builder
 
-RUN mkdir -p /go/src/github.com/stefanprodan/kubesec-webhook/
+RUN mkdir -p /go/src/github.com/lukebond/grafeas-image-signing-webhook/
 
-WORKDIR /go/src/github.com/stefanprodan/kubesec-webhook
+WORKDIR /go/src/github.com/lukebond/grafeas-image-signing-webhook
 
 COPY . .
 
@@ -11,7 +11,7 @@ COPY . .
 RUN gofmt -l -d $(find . -type f -name '*.go' -not -path "./vendor/*") && \
   GIT_COMMIT=$(git rev-list -1 HEAD) && \
   CGO_ENABLED=0 GOOS=linux go build \
-  -a -installsuffix cgo -o kubesec ./cmd/kubesec
+  -a -installsuffix cgo -o grafeas-image-signing ./cmd/grafeas-image-signing
 
 FROM alpine:3.7
 
@@ -22,10 +22,10 @@ RUN addgroup -S app \
 
 WORKDIR /home/app
 
-COPY --from=builder /go/src/github.com/stefanprodan/kubesec-webhook/kubesec .
+COPY --from=builder /go/src/github.com/lukebond/grafeas-image-signing-webhook/grafeas-image-signing .
 
 RUN chown -R app:app ./
 
 USER app
 
-CMD ["./kubesec"]
+CMD ["./grafeas-image-signing"]

@@ -18,7 +18,7 @@ import (
 
 // deploymentValidator validates the definition against the Kubesec.io score.
 type deploymentValidator struct {
-	minScore int
+	grafeasUrl string
 	logger   log.Logger
 }
 
@@ -57,22 +57,22 @@ func (d *deploymentValidator) Validate(_ context.Context, obj metav1.Object) (bo
 		return false, validating.ValidatorResult{Valid: true}, nil
 	}
 
-	if result.Score < d.minScore {
-		return true, validating.ValidatorResult{
-			Valid:   false,
-			Message: fmt.Sprintf("%s score is %d, deployment minimum accepted score is %d", kObj.Name, result.Score, d.minScore),
-		}, nil
-	}
+	//if result.Score < d.grafeasUrl {
+	//	return true, validating.ValidatorResult{
+	//		Valid:   false,
+	//		Message: fmt.Sprintf("%s score is %d, deployment minimum accepted score is %d", kObj.Name, result.Score, d.grafeasUrl),
+	//	}, nil
+	//}
 
 	return false, validating.ValidatorResult{Valid: true}, nil
 }
 
 // NewDeploymentWebhook returns a new deployment validating webhook.
-func NewDeploymentWebhook(minScore int, mrec metrics.Recorder, logger log.Logger) (webhook.Webhook, error) {
+func NewDeploymentWebhook(grafeasUrl string, mrec metrics.Recorder, logger log.Logger) (webhook.Webhook, error) {
 
 	// Create validators.
 	val := &deploymentValidator{
-		minScore: minScore,
+		grafeasUrl: grafeasUrl,
 		logger:   logger,
 	}
 

@@ -18,7 +18,7 @@ import (
 
 // statefulSetValidator validates the definition against the Kubesec.io score.
 type statefulSetValidator struct {
-	minScore int
+	grafeasUrl string
 	logger   log.Logger
 }
 
@@ -58,22 +58,22 @@ func (d *statefulSetValidator) Validate(_ context.Context, obj metav1.Object) (b
 		return false, validating.ValidatorResult{Valid: true}, nil
 	}
 
-	if result.Score < d.minScore {
-		return true, validating.ValidatorResult{
-			Valid:   false,
-			Message: fmt.Sprintf("%s score is %d, statefulset minimum accepted score is %d", kObj.Name, result.Score, d.minScore),
-		}, nil
-	}
+	//if result.Score < d.grafeasUrl {
+	//	return true, validating.ValidatorResult{
+	//		Valid:   false,
+	//		Message: fmt.Sprintf("%s score is %d, statefulset minimum accepted score is %d", kObj.Name, result.Score, d.grafeasUrl),
+	//	}, nil
+	//}
 
 	return false, validating.ValidatorResult{Valid: true}, nil
 }
 
 // NewStatefulSetWebhook returns a new statefulset validating webhook.
-func NewStatefulSetWebhook(minScore int, mrec metrics.Recorder, logger log.Logger) (webhook.Webhook, error) {
+func NewStatefulSetWebhook(grafeasUrl string, mrec metrics.Recorder, logger log.Logger) (webhook.Webhook, error) {
 
 	// Create validators.
 	val := &statefulSetValidator{
-		minScore: minScore,
+		grafeasUrl: grafeasUrl,
 		logger:   logger,
 	}
 

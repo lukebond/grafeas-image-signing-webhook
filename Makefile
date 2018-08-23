@@ -1,7 +1,7 @@
-NAME:=kubesec-webhook
-DOCKER_REPOSITORY:=stefanprodan
+NAME:=grafeas-image-signing-webhook
+DOCKER_REPOSITORY:=lukebond
 DOCKER_IMAGE_NAME:=$(DOCKER_REPOSITORY)/$(NAME)
-GITREPO:=github.com/stefanprodan/kubesec-webhook
+GITREPO:=github.com/lukebond/grafeas-image-signing-webhook
 GITCOMMIT:=$(shell git describe --dirty --always)
 VERSION:=0.1-dev
 
@@ -23,12 +23,12 @@ certs:
 
 .PHONY: deploy
 deploy:
-	kubectl create namespace kubesec
+	kubectl create namespace grafeas-image-signing
 	kubectl apply -f ./deploy/
 
 .PHONY: delete
 delete:
-	kubectl delete namespace kubesec
+	kubectl delete namespace grafeas-image-signing
 	kubectl delete -f ./deploy/webhook-registration.yaml
 
 travis_push:

@@ -15,7 +15,7 @@ import (
 	"github.com/slok/kubewebhook/pkg/log"
 	"github.com/slok/kubewebhook/pkg/observability/metrics"
 
-	"github.com/stefanprodan/kubesec-webhook/pkg/webhook"
+	"github.com/lukebond/grafeas-image-signing-webhook/pkg/webhook"
 )
 
 // Defaults.
@@ -33,7 +33,7 @@ type Flags struct {
 	Debug                bool
 	CertFile             string
 	KeyFile              string
-	MinScore             int
+	GrafeasUrl           string
 }
 
 // NewFlags returns the flags of the commandline.
@@ -45,7 +45,6 @@ func NewFlags() *Flags {
 	fl.BoolVar(&flags.Debug, "debug", debugDef, "enable debug mode")
 	fl.StringVar(&flags.CertFile, "tls-cert-file", "certs/cert.pem", "TLS certificate file")
 	fl.StringVar(&flags.KeyFile, "tls-key-file", "certs/key.pem", "TLS key file")
-	fl.IntVar(&flags.MinScore, "min-score", 0, "Kubesec.io minimum score to validate against")
 
 	fl.Parse(os.Args[1:])
 
@@ -70,7 +69,7 @@ func (m *Main) Run() error {
 	metricsRec := metrics.NewPrometheus(promReg)
 
 	// Create webhooks
-	pw, err := webhook.NewPodWebhook(m.flags.MinScore, metricsRec, m.logger)
+	pw, err := webhook.NewPodWebhook(m.flags.GrafeasUrl, metricsRec, m.logger)
 	if err != nil {
 		return err
 	}
@@ -78,7 +77,7 @@ func (m *Main) Run() error {
 	if err != nil {
 		return err
 	}
-	vdw, err := webhook.NewDeploymentWebhook(m.flags.MinScore, metricsRec, m.logger)
+	vdw, err := webhook.NewDeploymentWebhook(m.flags.GrafeasUrl, metricsRec, m.logger)
 	if err != nil {
 		return err
 	}
@@ -86,7 +85,7 @@ func (m *Main) Run() error {
 	if err != nil {
 		return err
 	}
-	dw, err := webhook.NewDaemonSetWebhook(m.flags.MinScore, metricsRec, m.logger)
+	dw, err := webhook.NewDaemonSetWebhook(m.flags.GrafeasUrl, metricsRec, m.logger)
 	if err != nil {
 		return err
 	}
@@ -94,7 +93,7 @@ func (m *Main) Run() error {
 	if err != nil {
 		return err
 	}
-	sw, err := webhook.NewStatefulSetWebhook(m.flags.MinScore, metricsRec, m.logger)
+	sw, err := webhook.NewStatefulSetWebhook(m.flags.GrafeasUrl, metricsRec, m.logger)
 	if err != nil {
 		return err
 	}

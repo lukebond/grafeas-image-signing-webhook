@@ -1,29 +1,32 @@
-# kubesec-webhook
+# grafeas-image-signing-webhook
 
-[![Build Status](https://travis-ci.org/stefanprodan/kubesec-webhook.svg?branch=master)](https://travis-ci.org/stefanprodan/kubesec-webhook)
+This repo began as a fork from
+[https://github.com/stefanprodan/kubesec-webhook.git](https://github.com/stefanprodan/kubesec-webhook.git).
+All credit goes to Stefan for 99% of this codebase.
 
-Kubesec.io admission controller for Kubernetes Deployments, DaemonSets and StatefulSets
-
-For the kubectl scan plugin see [kubectl-kubesec](https://github.com/stefanprodan/kubectl-kubesec)
+Kubernetes validating webhook admission controller that checks if images
+have been signed in Grafeas.
 
 ### Install
 
-Generate webhook configuration files with a new TLS certificate and CA Bundle:
+Generate webhook configuration files with a new TLS certificate and CA
+Bundle:
 
 ```bash
 make certs
 ```
 
-Deploy the admission controller and webhooks in the kubesec namespace (requires Kubernetes 1.10 or newer):
+Deploy the admission controller and webhooks in the kubesec namespace
+(requires Kubernetes 1.10 or newer):
 
 ```bash
 make deploy
 ``` 
 
-Enable Kubesec validation by adding this label:
+Enable grafeas-image-signing validation by adding this label:
 
 ```bash
-kubectl label namespaces default kubesec-validation=enabled
+kubectl label namespaces default grafeas-image-signing-validation=enabled
 ```
 
 ### Usage
@@ -59,6 +62,9 @@ statefulset-test score is -30, deployment minimum accepted score is 0
 ```
 
 ### Configuration
+
+TODO
+- configure URL of grafeas instance
 
 You can set the minimum Kubesec.io score in `./deploy/webhook/yaml`:
 

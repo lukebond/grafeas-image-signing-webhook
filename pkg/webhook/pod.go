@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	grafeas "github.com/Grafeas/client-go/v1alpha1"
 	"github.com/slok/kubewebhook/pkg/log"
 	"github.com/slok/kubewebhook/pkg/observability/metrics"
 	"github.com/slok/kubewebhook/pkg/webhook"
@@ -18,7 +19,7 @@ import (
 
 // podValidator validates the definition against the Kubesec.io score.
 type podValidator struct {
-	minScore int
+	grafeasUrl string
 	logger   log.Logger
 }
 
@@ -57,22 +58,22 @@ func (d *podValidator) Validate(_ context.Context, obj metav1.Object) (bool, val
 		return false, validating.ValidatorResult{Valid: true}, nil
 	}
 
-	if result.Score < d.minScore {
-		return true, validating.ValidatorResult{
-			Valid:   false,
-			Message: fmt.Sprintf("%s score is %d, minimum accepted score is %d", kObj.Name, result.Score, d.minScore),
-		}, nil
-	}
+	//if result.Score < d.minScore {
+	//	return true, validating.ValidatorResult{
+	//		Valid:   false,
+	//		Message: fmt.Sprintf("%s score is %d, minimum accepted score is %d", kObj.Name, result.Score, d.minScore),
+	//	}, nil
+	//}
 
 	return false, validating.ValidatorResult{Valid: true}, nil
 }
 
 // NewPodWebhook returns a new deployment validating webhook.
-func NewPodWebhook(minScore int, mrec metrics.Recorder, logger log.Logger) (webhook.Webhook, error) {
+func NewPodWebhook(grafeasUrl string, mrec metrics.Recorder, logger log.Logger) (webhook.Webhook, error) {
 
 	// Create validators.
 	val := &podValidator{
-		minScore: minScore,
+		grafeasUrl: grafeasUrl,
 		logger:   logger,
 	}
 

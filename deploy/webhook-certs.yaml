@@ -5,5 +5,5 @@ data:
 kind: Secret
 metadata:
   creationTimestamp: null
-  name: kubesec-webhook-certs
-  namespace: kubesec
+  name: grafeas-image-signing-webhook-certs
+  namespace: grafeas-image-signing

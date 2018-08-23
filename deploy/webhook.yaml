@@ -2,23 +2,23 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: kubesec-webhook
+  name: grafeas-image-signing-webhook
   labels:
-    app: kubesec-webhook
-  namespace: kubesec
+    app: grafeas-image-signing-webhook
+  namespace: grafeas-image-signing
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: kubesec-webhook
+        app: grafeas-image-signing-webhook
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8081"
     spec:
       containers:
-        - name: kubesec-webhook
-          image: stefanprodan/kubesec-webhook:0.1-dev
+        - name: grafeas-image-signing-webhook
+          image: lukebond/grafeas-image-signing-webhook
           imagePullPolicy: Always
           securityContext:
             readOnlyRootFilesystem: true
@@ -30,7 +30,7 @@ spec:
               add:
               - NET_BIND_SERVICE
           command:
-            - ./kubesec
+            - ./grafeas-image-signing
           args:
             - -tls-cert-file=/etc/webhook/certs/cert.pem
             - -tls-key-file=/etc/webhook/certs/key.pem
@@ -60,18 +60,18 @@ spec:
       volumes:
         - name: webhook-certs
           secret:
-            secretName: kubesec-webhook-certs
+            secretName: grafeas-image-signing-webhook-certs
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: kubesec-webhook
+  name: grafeas-image-signing-webhook
   labels:
-    app: kubesec-webhook
-  namespace: kubesec
+    app: grafeas-image-signing-webhook
+  namespace: grafeas-image-signing
 spec:
   ports:
   - port: 443
     targetPort: 8080
   selector:
-    app: kubesec-webhook
+    app: grafeas-image-signing-webhook
