@@ -40,6 +40,7 @@ type Flags struct {
 func NewFlags() *Flags {
 	flags := &Flags{}
 	fl := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+  fl.StringVar(&flags.GrafeasUrl, "grafeas", "http://grafeas:8080", "The Grafeas server address")
 	fl.StringVar(&flags.ListenAddress, "listen-address", lAddressDef, "webhook server listen address")
 	fl.StringVar(&flags.MetricsListenAddress, "metrics-listen-address", lMetricsAddress, "metrics server listen address")
 	fl.BoolVar(&flags.Debug, "debug", debugDef, "enable debug mode")
