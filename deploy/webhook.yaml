@@ -5,7 +5,7 @@ metadata:
   name: grafeas-image-signing-webhook
   labels:
     app: grafeas-image-signing-webhook
-  namespace: grafeas-image-signing
+  namespace: default
 spec:
   replicas: 1
   template:
@@ -34,7 +34,7 @@ spec:
           args:
             - -tls-cert-file=/etc/webhook/certs/cert.pem
             - -tls-key-file=/etc/webhook/certs/key.pem
-            - -min-score=0
+            - -grafeas=34.253.188.41:8081
           ports:
             - containerPort: 8080
             - containerPort: 8081
@@ -68,7 +68,7 @@ metadata:
   name: grafeas-image-signing-webhook
   labels:
     app: grafeas-image-signing-webhook
-  namespace: grafeas-image-signing
+  namespace: default
 spec:
   ports:
   - port: 443

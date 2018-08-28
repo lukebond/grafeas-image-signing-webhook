@@ -6,4 +6,4 @@ kind: Secret
 metadata:
   creationTimestamp: null
   name: grafeas-image-signing-webhook-certs
-  namespace: grafeas-image-signing
+  namespace: default

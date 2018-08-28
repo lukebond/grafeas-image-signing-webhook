@@ -164,6 +164,23 @@
   version = "v1.0.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:9ae1e7d89c70fea3285a7963996f7ed0815a35cbfe0ec32d92c9123b651c3a94"
+  name = "golang.org/x/crypto"
+  packages = [
+    "cast5",
+    "openpgp",
+    "openpgp/armor",
+    "openpgp/clearsign",
+    "openpgp/elgamal",
+    "openpgp/errors",
+    "openpgp/packet",
+    "openpgp/s2k",
+  ]
+  pruneopts = "UT"
+  revision = "614d502a4dac94afa3a6ce146bd1736da82514c6"
+
+[[projects]]
   digest = "1:1e853578c8a3c5d54c1b54a4821075393b032110170107295f75442f8b41720c"
   name = "golang.org/x/net"
   packages = [
@@ -338,6 +355,10 @@
     "github.com/slok/kubewebhook/pkg/observability/metrics",
     "github.com/slok/kubewebhook/pkg/webhook",
     "github.com/slok/kubewebhook/pkg/webhook/validating",
+    "golang.org/x/crypto/openpgp",
+    "golang.org/x/crypto/openpgp/armor",
+    "golang.org/x/crypto/openpgp/clearsign",
+    "golang.org/x/crypto/openpgp/packet",
     "k8s.io/api/apps/v1beta1",
     "k8s.io/api/core/v1",
     "k8s.io/api/extensions/v1beta1",

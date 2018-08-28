@@ -23,12 +23,12 @@ certs:
 
 .PHONY: deploy
 deploy:
-	kubectl create namespace grafeas-image-signing
+	#kubectl create namespace grafeas-image-signing
 	kubectl apply -f ./deploy/
 
 .PHONY: delete
 delete:
-	kubectl delete namespace grafeas-image-signing
+	#kubectl delete namespace grafeas-image-signing
 	kubectl delete -f ./deploy/webhook-registration.yaml
 
 travis_push:

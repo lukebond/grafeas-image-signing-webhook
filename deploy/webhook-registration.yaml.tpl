@@ -1,17 +1,17 @@
 ---
 apiVersion: admissionregistration.k8s.io/v1beta1
-kind: MutatingWebhookConfiguration
+kind: ValidatingWebhookConfiguration
 metadata:
   name: grafeas-image-signing-webhook
   labels:
     app: grafeas-image-signing-webhook
     kind: validator
 webhooks:
-  - name: deployment.admission.kubesc.io
+  - name: deployment.admission.grafeas-image-signing-webhook
     clientConfig:
       service:
         name: grafeas-image-signing-webhook
-        namespace: grafeas-image-signing
+        namespace: default
         path: "/deployment"
       caBundle: CA_BUNDLE
     rules:
@@ -29,11 +29,11 @@ webhooks:
     namespaceSelector:
       matchLabels:
         grafeas-image-signing-validation: enabled
-  - name: daemonset.admission.kubesc.io
+  - name: daemonset.admission.grafeas-image-signing-webhook
     clientConfig:
       service:
         name: grafeas-image-signing-webhook
-        namespace: grafeas-image-signing
+        namespace: default
         path: "/daemonset"
       caBundle: CA_BUNDLE
     rules:
@@ -51,11 +51,11 @@ webhooks:
     namespaceSelector:
       matchLabels:
         grafeas-image-signing-validation: enabled
-  - name: statefulset.admission.kubesc.io
+  - name: statefulset.admission.grafeas-image-signing-webhook
     clientConfig:
       service:
         name: grafeas-image-signing-webhook
-        namespace: grafeas-image-signing
+        namespace: default
         path: "/statefulset"
       caBundle: CA_BUNDLE
     rules:

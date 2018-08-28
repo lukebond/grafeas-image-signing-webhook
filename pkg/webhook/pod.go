@@ -4,16 +4,35 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
+
 	grafeas "github.com/Grafeas/client-go/v1alpha1"
 	"github.com/slok/kubewebhook/pkg/log"
 	"github.com/slok/kubewebhook/pkg/observability/metrics"
 	"github.com/slok/kubewebhook/pkg/webhook"
 	"github.com/slok/kubewebhook/pkg/webhook/validating"
+
+	"golang.org/x/crypto/openpgp"
+	"golang.org/x/crypto/openpgp/armor"
+	"golang.org/x/crypto/openpgp/clearsign"
+	"golang.org/x/crypto/openpgp/packet"
+
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/kubernetes/scheme"
+)
+
+var (
+	notesPath       = "/v1alpha1/projects/image-signing/notes"
+	occurrencesPath = "/v1alpha1/projects/image-signing/occurrences"
 )
 
 // podValidator validates the definition against the Kubesec.io score.
@@ -46,22 +65,21 @@ func (d *podValidator) Validate(_ context.Context, obj metav1.Object) (bool, val
 	writer.Flush()
 
 	d.logger.Infof("Scanning pod %s", kObj.Name)
-/*
-  	admissionResponse := v1beta1.AdmissionResponse{Allowed: false}
-	for _, container := range pod.Spec.Containers {
+	d.logger.Infof("Pod %s", kObj)
+	for _, container := range kObj.Spec.Containers {
 		// Retrieve all occurrences.
 		// This call should be replaced by a filtered called based on
 		// the container image under review.
-		u := fmt.Sprintf("%s/%s", grafeasUrl, occurrencesPath)
+		u := fmt.Sprintf("%s/%s", d.grafeasUrl, occurrencesPath)
 		resp, err := http.Get(u)
 		if err != nil {
-			log.Println(err)
+      d.logger.Errorf("Fetch Grafeas occurrences failed %v", err)
 			continue
 		}
 
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Println(err)
+			d.logger.Errorf("Read Grafeas occurrences response failed %v", err)
 			resp.Body.Close()
 			continue
 		}
@@ -69,70 +87,67 @@ func (d *podValidator) Validate(_ context.Context, obj metav1.Object) (bool, val
 		defer resp.Body.Close()
 
 		if resp.StatusCode != 200 {
-			log.Printf("non 200 status code: %d", resp.StatusCode)
+			d.logger.Infof("non 200 status code: %d", resp.StatusCode)
 			continue
 		}
 
-		occurrencesResponse := grafeas.ListOccurrencesResponse{}
+		occurrencesResponse := grafeas.ApiListOccurrencesResponse{}
 		if err := json.Unmarshal(data, &occurrencesResponse); err != nil {
-			log.Println(err)
+			d.logger.Errorf("Grafeas occurrences response unmarshal failed %s", err)
 			continue
 		}
 
 		// Find a valid signature for the given container image.
-		match := false
 		for _, occurrence := range occurrencesResponse.Occurrences {
 			resourceUrl := occurrence.ResourceUrl
-			signature := occurrence.Attestation.PgpSignedAttestation.Signature
-			keyId := occurrence.Attestation.PgpSignedAttestation.PgpKeyId
+			signature := occurrence.AttestationDetails.PgpSignedAttestation.Signature
+			keyId := occurrence.AttestationDetails.PgpSignedAttestation.PgpKeyId
 
-			log.Printf("Container Image: %s", container.Image)
-			log.Printf("ResourceUrl: %s", resourceUrl)
-			log.Printf("Signature: %s", signature)
-			log.Printf("KeyId: %s", keyId)
+			d.logger.Infof("Container Image: %s", container.Image)
+			d.logger.Infof("ResourceUrl: %s", resourceUrl)
+			d.logger.Infof("Signature: %s", signature)
+			d.logger.Infof("KeyId: %s", keyId)
 
 			if container.Image != strings.TrimPrefix(resourceUrl, "https://") {
 				continue
 			}
 
-			match = true
-
 			s, err := base64.StdEncoding.DecodeString(signature)
 			if err != nil {
-				log.Println(err)
+				d.logger.Errorf("Error base64 decoding signature %v", err)
 				continue
 			}
 
 			publicKey := fmt.Sprintf("/etc/admission-controller/pubkeys/%s.pub", keyId)
-			log.Printf("Using public key: %s", publicKey)
+			d.logger.Infof("Using public key: %s", publicKey)
 
 			f, err := os.Open(publicKey)
 			if err != nil {
-				log.Println(err)
+				d.logger.Errorf("Error opening public key %v", err)
 				continue
 			}
 
 			block, err := armor.Decode(f)
 			if err != nil {
-				log.Println(err)
+				d.logger.Errorf("Error decoding armor sig %v", err)
 				continue
 			}
 
 			if block.Type != openpgp.PublicKeyType {
-				log.Println("Not public key")
+				d.logger.Errorf("Not public key")
 				continue
 			}
 
 			reader := packet.NewReader(block.Body)
 			pkt, err := reader.Next()
 			if err != nil {
-				log.Println(err)
+				d.logger.Errorf("Error reading public key block %v", err)
 				continue
 			}
 
 			key, ok := pkt.(*packet.PublicKey)
 			if !ok {
-				log.Println("Not public key")
+				d.logger.Errorf("Not public key")
 				continue
 			}
 
@@ -141,13 +156,13 @@ func (d *podValidator) Validate(_ context.Context, obj metav1.Object) (bool, val
 			reader = packet.NewReader(b.ArmoredSignature.Body)
 			pkt, err = reader.Next()
 			if err != nil {
-				log.Println(err)
+				d.logger.Errorf("Error reading armored sig %v", err)
 				continue
 			}
 
 			sig, ok := pkt.(*packet.Signature)
 			if !ok {
-				log.Println("Not signature")
+				d.logger.Errorf("Not signature")
 				continue
 			}
 
@@ -156,43 +171,27 @@ func (d *podValidator) Validate(_ context.Context, obj metav1.Object) (bool, val
 
 			err = key.VerifySignature(hash, sig)
 			if err != nil {
-				log.Println(err)
+				d.logger.Errorf("Error verifying signature %v", err)
 
 				message := fmt.Sprintf("Signature verification failed for container image: %s", container.Image)
-				log.Printf(message)
+				d.logger.Errorf("Error message %s", message)
 
-				admissionResponse.Allowed = false
-				admissionResponse.Result = &metav1.Status{
-					Reason: metav1.StatusReasonInvalid,
-					Details: &metav1.StatusDetails{
-						Causes: []metav1.StatusCause{
-							{Message: message},
-						},
-					},
-				}
-				goto done
+				//admissionResponse.Allowed = false
+				//admissionResponse.Result = &metav1.Status{
+				//	Reason: metav1.StatusReasonInvalid,
+				//	Details: &metav1.StatusDetails{
+				//		Causes: []metav1.StatusCause{
+				//			{Message: message},
+				//		},
+				//	},
+				//}
+				//goto done
 			}
 
-			log.Printf("Signature verified for container image: %s", container.Image)
-			admissionResponse.Allowed = true
-		}
-
-		if !match {
-			message := fmt.Sprintf("No matched signatures for container image: %s", container.Image)
-			log.Printf(message)
-			admissionResponse.Allowed = false
-			admissionResponse.Result = &metav1.Status{
-				Reason: metav1.StatusReasonInvalid,
-				Details: &metav1.StatusDetails{
-					Causes: []metav1.StatusCause{
-						{Message: message},
-					},
-				},
-			}
-			goto done
+			d.logger.Infof("Signature verified for container image: %s", container.Image)
+			//admissionResponse.Allowed = true
 		}
 	}
-*/
 
 	//result, err := kubesec.NewClient().ScanDefinition(buffer)
 	//if err != nil {
@@ -211,7 +210,7 @@ func (d *podValidator) Validate(_ context.Context, obj metav1.Object) (bool, val
 	//	}, nil
 	//}
 
-	return false, validating.ValidatorResult{Valid: true}, nil
+	return false, validating.ValidatorResult{Valid: false}, nil
 }
 
 // NewPodWebhook returns a new deployment validating webhook.

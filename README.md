@@ -32,7 +32,11 @@ kubectl label namespaces default grafeas-image-signing-validation=enabled
 ### Development
 
 1. Install [skaffold](https://github.com/GoogleContainerTools/skaffold)
-2. Run `skaffold dev`
+1. Have available a Kubernetes cluster, with `kubectl` configured to point to
+   it
+1. Grafeas running somewhere accessible from this application once deployed to
+   the cluster
+1. Run `skaffold dev`
 
 It will continuously deploy to wherever your `kubectl` is pointing, watching
 the filesystem for changes.
